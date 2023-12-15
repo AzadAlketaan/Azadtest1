@@ -22,16 +22,26 @@
                    
                     <div class="dropdown-divider"></div>
                     @foreach (auth()->user()->unreadNotifications->take(10) as $notification)
-                        <a class="dropdown-item"> <p style="color:green;">{{$notification->data['data']}}</p></a> 
+                        <a class="dropdown-item">
+                          <p style="color:green;">
+                            {{substr($notification->data['data'], 0, 40)}}
+                            @if(strlen($notification->data['data']) > 40) ....@endif
+                          </p>
+                        </a> 
                     @endforeach
                     @if(auth()->user()->unreadNotifications->count() < 10)
                       @foreach (auth()->user()->readNotifications->take( 10 - auth()->user()->unreadNotifications->count()) as $notification)
-                        <a class="dropdown-item"><p>{{$notification->data['data']}}</p></a> 
+                        <a class="dropdown-item">
+                          <p>
+                            {{substr($notification->data['data'], 0, 40)}}
+                            @if(strlen($notification->data['data']) > 40) ....@endif
+                          </p>
+                        </a> 
                       @endforeach
                     @endif
                     <div class="dropdown-divider"></div>
                     @if (auth()->user()->unreadNotifications)
-                      <a class="dropdown-item" href="{{route('mark-as-read')}}">Mark All as Read</a>
+                      <a class="dropdown-item" href="{{route('mark-as-read')}}" style="color:rgb(0, 98, 128);">Mark All as Read</a>
                     @endif
                 </div>
             </li>
