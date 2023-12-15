@@ -13,7 +13,9 @@
                         <form method="POST" action="{{ route('logout') }}"> @csrf<button class="btn btn-primary">{{ __('Logout') }}</button></form> 
                         <br>
                         <h4>Author:</h4>
-                        <p> {{ $note->user->name }}</p>
+                        <p>
+                          @if(isset($note->user->name)) {{ $note->user->name }} @else Not Exists!@endif
+                        </p>
                         <h4>Title:</h4>
                         <p> {{ $note->title }}</p>
                         <h4>Content:</h4> 
@@ -22,9 +24,9 @@
                         <p>{{ $note->applies_to_date }}</p>
                         <h4> Status: </h4>
                         <p>
-                            <span class="{{ $note->status->class }}">
-                              {{ $note->status->name }}
-                            </span>
+                          @if(isset($note->status))
+                            <span class="{{ $note->status->class }}">{{ $note->status->name }}</span>
+                          @else Not Exists! @endif
                         </p>
                         <h4>Note type:</h4>
                         <p>{{ $note->note_type }}</p>

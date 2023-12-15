@@ -11,10 +11,31 @@
             }
         ?>  
         <ul class="c-header-nav ml-auto mr-4">
-          <li class="c-header-nav-item d-md-down-none mx-2"><a class="c-header-nav-link">
-              <svg class="c-icon">
-                <use xlink:href="{{ url('/icons/sprites/free.svg#cil-bell') }}"></use>
-              </svg></a></li>
+          @if(!empty(auth()->user()))
+            <li class="c-header-nav-item dropdown">
+              <a class="c-header-nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-bell"></i>
+                    <span class="badge badge-light bg-success badge-xs">{{auth()->user()->unreadNotifications->count()}}</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+                    <span class="dropdown-item-text">You have {{auth()->user()->unreadNotifications->count()}} new notifications</span>
+                   
+                    <div class="dropdown-divider"></div>
+                    @foreach (auth()->user()->unreadNotifications->take(10) as $notification)
+                        <a class="dropdown-item"> <p style="color:green;">{{$notification->data['data']}}</p></a> 
+                    @endforeach
+                    @if(auth()->user()->unreadNotifications->count() < 10)
+                      @foreach (auth()->user()->readNotifications->take( 10 - auth()->user()->unreadNotifications->count()) as $notification)
+                        <a class="dropdown-item"><p>{{$notification->data['data']}}</p></a> 
+                      @endforeach
+                    @endif
+                    <div class="dropdown-divider"></div>
+                    @if (auth()->user()->unreadNotifications)
+                      <a class="dropdown-item" href="{{route('mark-as-read')}}">Mark All as Read</a>
+                    @endif
+                </div>
+            </li>
+          @endif
           <li class="c-header-nav-item d-md-down-none mx-2"><a class="c-header-nav-link">
               <svg class="c-icon">
                 <use xlink:href="{{ url('/icons/sprites/free.svg#cil-list-rich') }}"></use>
@@ -23,7 +44,8 @@
               <svg class="c-icon">
                 <use xlink:href="{{ url('/icons/sprites/free.svg#cil-envelope-open') }}"></use>
               </svg></a></li>
-          <li class="c-header-nav-item dropdown"><a class="c-header-nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+          <li class="c-header-nav-item dropdown">
+            <a class="c-header-nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
               <div class="c-avatar"><img class="c-avatar-img" src="{{ url('/assets/img/avatars/6.jpg') }}" alt="user@email.com"></div>
             </a>
             <div class="dropdown-menu dropdown-menu-right pt-0">

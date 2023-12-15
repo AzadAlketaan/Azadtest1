@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\NotesController;
+use App\Http\Controllers\NotificationsController;
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -59,7 +63,12 @@ Route::group(['middleware' => ['get.menu']], function () {
             Route::get('/modals', function(){   return view('dashboard.notifications.modals'); });
         });
         Route::resource('notes', 'NotesController');
+        Route::POST('/dataTable', [NotesController::class, 'dataTable'])->name('notes.dataTable');
     });
+
+    /**Notifications*/
+    Route::get('/mark-as-read', [NotificationsController::class,'markAsRead'])->name('mark-as-read');
+
     Auth::routes();
 
     Route::resource('resource/{table}/resource', 'ResourceController')->names([

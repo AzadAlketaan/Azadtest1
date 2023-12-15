@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\NotesNotify;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use App\Models\Notes;
 use App\Models\Status;
+use App\Models\User;
+use DataTables;
 
 class NotesController extends Controller
 {
-
     /**
      * Create a new controller instance.
      *
@@ -18,6 +22,7 @@ class NotesController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->status = Status::getAllStatus();
     }
 
     /**
@@ -27,8 +32,36 @@ class NotesController extends Controller
      */
     public function index()
     {
-        $notes = Notes::with('user')->with('status')->paginate( 20 );
-        return view('dashboard.notes.notesList', ['notes' => $notes]);
+        return view('dashboard.notes.notesList')->with(['status' => $this->status]);
+    }
+
+    public function dataTable(Request $request)
+    {
+        if (request()->ajax()) {
+            $advices = Notes::query()
+                ->with('status')
+                ->when((filled(request()->status_id)), function (Builder $builder) {
+                    $builder->where('status_id', request()->status_id);
+                });
+
+            return Datatables::of($advices)
+                ->addIndexColumn()
+                ->addColumn('action', function ($row) {
+                    return [
+                        'showUrl' => route('notes.show', $row->id) ?? Null,
+                        'EditUrl' => route('notes.edit', $row->id) ?? Null,
+                        'deleteUrl' => route('notes.destroy', $row->id) ?? Null
+                    ];
+                })
+                ->addColumn('status', function ($row) {
+                    return isset($row->status) ? json_decode($row->status, true) : Null;
+                })
+                ->addColumn('author', function ($row) {
+                    return isset($row->user) ? $row->user->name : Null;
+                })
+                ->rawColumns(['author'])
+                ->make(true);
+        }
     }
 
     /**
@@ -66,8 +99,9 @@ class NotesController extends Controller
         $note->applies_to_date = $request->input('applies_to_date');
         $note->users_id = $user->id;
         $note->save();
-        $request->session()->flash('message', 'Successfully created note');
-        return redirect()->route('notes.index');
+        //$request->session()->flash('message', 'Successfully created note');
+        Notification::send(User::getAdmins(), new NotesNotify($note));
+        return redirect(route('notes.index'))->with('success', 'Note created successfully');
     }
 
     /**
@@ -130,12 +164,12 @@ class NotesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Notes $note)
     {
-        $note = Notes::find($id);
-        if($note){
-            $note->delete();
-        }
-        return redirect()->route('notes.index');
+        $note->delete();
+
+        $data['code'] = 1;
+        $data['msg'] = 'Item Deleted successfully';
+        return response()->json($data);
     }
 }

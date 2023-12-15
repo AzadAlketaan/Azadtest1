@@ -18,4 +18,9 @@ class Status extends Model
     {
         return $this->hasMany('App\Models\Notes');
     }
+
+    public static function getAllStatus()
+    {
+        return Status::select('id', 'name')->get();
+    }
 }

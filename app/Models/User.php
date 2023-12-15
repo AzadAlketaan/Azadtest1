@@ -26,6 +26,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password',
     ];
+    
+    const ADMIN = 'admin';
 
     /**
      * The attributes that should be hidden for arrays.
@@ -52,4 +54,11 @@ class User extends Authenticatable
     protected $attributes = [ 
         'menuroles' => 'user',
     ];
+
+    public static function getAdmins()
+    {
+        return User::whereHas('roles', function ($q) {
+            $q->where('name', User::ADMIN);
+        })->get();
+    }
 }
